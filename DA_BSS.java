@@ -1,10 +1,10 @@
-package BSS;
-
+import java.util.Iterator;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
+
 
 public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 	
@@ -53,7 +53,40 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 	@Override
 	public void receiveMessage(Messages msg) throws RemoteException {
 		// TODO Auto-generated method stub
+		if(msg.type == 0){
+			queue.add(msg);
+			
+			Messages ack = new Messages();
+			ack.idSender = msg.idSender;
+			ack.msg = msg.msg;
+			ack.timestamp = msg.timestamp;
+			ack.type = 1;
+			
+			broadcastMessage(ack);
+			
+		} else if(msg.type == 1){
+			
+			ackQueue.add(msg);
+			int count = 0;
+			
+			for(int i=0; i<ackQueue.size(); i++){
+				if(ackQueue.get(i).equals(queue.peek()))
+					count++;
+			}
+			
+			if(count == proc.length){
+				Messages m = queue.poll();
+				for(Iterator<Messages> it = ackQueue.iterator(); it.hasNext();){
+					Messages ms = (Messages) it.next();
+					if(ms.equals(ms))
+						it.remove();
+				}
+			}
+		}
 		
+		if(queue.size() == 0 && ackQueue.size() ==0){
+			System.out.println("Finished!");
+		}
 	}
 
 	@Override

@@ -1,5 +1,3 @@
-package BSS;
-
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RMISecurityManager;
