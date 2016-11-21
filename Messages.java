@@ -25,3 +25,4 @@ public class Messages implements Serializable{
 		return false;
 	}
 }
+

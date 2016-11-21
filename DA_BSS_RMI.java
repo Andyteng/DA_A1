@@ -1,4 +1,3 @@
-
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -12,3 +11,4 @@ public interface DA_BSS_RMI extends Remote{
 	public void setProcessesNetwork(DA_BSS_RMI[] proc) throws RemoteException;
 	public void setStartTime(long t) throws RemoteException;
 }
+

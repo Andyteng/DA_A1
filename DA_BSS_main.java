@@ -32,6 +32,7 @@ public class DA_BSS_main {
 				for(int i=0; i<Total_Process_Num; i++){
 					proc[i] = (DA_BSS_RMI) Naming.lookup("rmi://localhost/DA"+i);
 				}
+				ready = true;
 			}
 			catch(NotBoundException e){
 				System.out.println("not ready for all process");
@@ -41,8 +42,8 @@ public class DA_BSS_main {
 		long timeStart = new Date().getTime();
 		
 		for(int i=0; i<Total_Process_Num; i++){
-			proc[Total_Process_Num].setProcessesNetwork(proc);
-			proc[Total_Process_Num].setStartTime(timeStart);
+			proc[i].setProcessesNetwork(proc);
+			proc[i].setStartTime(timeStart);
 		}
 
 		for(int i=0; i<Total_Process_Num; i++){
