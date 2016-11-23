@@ -1,9 +1,9 @@
+
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.util.Date;
 
 public class DA_BSS_main {
 	
@@ -39,11 +39,10 @@ public class DA_BSS_main {
 			}
 		}
 		
-		long timeStart = new Date().getTime();
 		
 		for(int i=0; i<Total_Process_Num; i++){
 			proc[i].setProcessesNetwork(proc);
-			proc[i].setStartTime(timeStart);
+//			proc[i].setStartTime(timeStart);
 		}
 
 		for(int i=0; i<Total_Process_Num; i++){
@@ -55,10 +54,11 @@ public class DA_BSS_main {
 						
 						try{
 							Thread.sleep((long)(Math.random() * 500));
+							daobj.setLocalVector(countP);
 							Messages testmsg = new Messages();
 							testmsg.msg = "The Message P"+countP+" N"+j;
-							testmsg.idSender = countP*Total_Msg_Num+j;
-							testmsg.timestamp = new Date().getTime();
+							testmsg.idSender = countP;
+							testmsg.vectorClock = daobj.getLocalVector();
 							daobj.broadcastMessage(testmsg);
 						}
 						catch (Exception e) {

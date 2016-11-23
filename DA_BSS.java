@@ -1,9 +1,9 @@
+
 import java.util.Iterator;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.PriorityQueue;
+
 
 
 public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
@@ -13,17 +13,17 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	PriorityQueue<Messages> queue;
-	ArrayList<Messages> ackQueue;
+
+	ArrayList<Messages> queue;
 	DA_BSS_RMI[] proc;
 	int id;
 	long timeStart;
+	public int[] localVector = new int[DA_BSS_main.Total_Process_Num];
 	
 	protected DA_BSS(int id) throws RemoteException{
 		super();
 		this.id = id;
-		queue = new PriorityQueue<Messages>(10, new MsgComparator());
-		ackQueue = new ArrayList<Messages>();
+		queue = new ArrayList<Messages>();
 		
 	}
 	
@@ -35,7 +35,7 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 			Thread tr = new Thread("t_"+(i++)){
 				public void run(){
 					try{
-						Thread.sleep((long)(Math.random() * 100));
+						Thread.sleep((long)(Math.random() * 500));
 						Bss_I.receiveMessage(msg);
 					} 
 					catch (InterruptedException e){
@@ -49,44 +49,49 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 			tr.start();
 		}
 	}
-
+	
+	public boolean deliver(Messages msg){
+		
+		int[] compareVector = localVector;
+		compareVector[msg.idSender] += 1;
+		boolean deliver = true;
+		for(int i=0; i<DA_BSS_main.Total_Process_Num; i++){
+			if(compareVector[i] < msg.vectorClock[i]){
+				deliver = false;
+			}
+		}
+		return deliver;
+		
+	}
+	
+	
 	@Override
 	public void receiveMessage(Messages msg) throws RemoteException {
 		// TODO Auto-generated method stub
-		if(msg.type == 0){
-			queue.add(msg);
-			
-			Messages ack = new Messages();
-			ack.idSender = msg.idSender;
-			ack.msg = msg.msg;
-			ack.timestamp = msg.timestamp;
-			ack.type = 1;
-			
-			broadcastMessage(ack);
-			
-		} else if(msg.type == 1){
-			
-			ackQueue.add(msg);
-			int count = 0;
-			
-			for(int i=0; i<ackQueue.size(); i++){
-				if(ackQueue.get(i).equals(queue.peek()))
-					count++;
-			}
-			
-			if(count == proc.length){
-				Messages m = queue.poll();
-				for(Iterator<Messages> it = ackQueue.iterator(); it.hasNext();){
-					Messages ms = (Messages) it.next();
-					if(ms.equals(ms))
+		if(deliver(msg)){
+			localVector = msg.vectorClock;
+			System.out.println(msg.msg+" "+localVector.toString());
+			while(queue != null){
+				boolean end = true;
+				for(Iterator<Messages> it = queue.iterator();it.hasNext();){
+					Messages m = it.next();
+					if(deliver(m)){
+						end = false;
+						localVector = m.vectorClock;
+						System.out.println(m.msg+" "+localVector.toString());
 						it.remove();
+					}
 				}
+				if(end) break;
 			}
+			
+			
+		}
+		else{
+			queue.add(msg);
 		}
 		
-		if(queue.size() == 0 && ackQueue.size() ==0){
-			System.out.println("Finished!");
-		}
+		
 	}
 
 	@Override
@@ -95,22 +100,17 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 		this.proc = proc;
 	}
 
-	@Override
-	public void setStartTime(long t) throws RemoteException {
-		// TODO Auto-generated method stub
-		timeStart = t;
-	}
-	
-	class MsgComparator implements Comparator<Messages>{
 
-		@Override
-		public int compare(Messages o1, Messages o2) {
-			// TODO Auto-generated method stub
-			if(o1.timestamp == o2.timestamp)
-				return o1.idSender - o2.idSender;
-			return (int)(o1.timestamp - o2.timestamp);
-		}
-		
+	@Override
+	public void setLocalVector(int i) throws RemoteException {
+		// TODO Auto-generated method stub
+		localVector[i] += 1;
+	}
+
+	@Override
+	public int[] getLocalVector() throws RemoteException {
+		// TODO Auto-generated method stub
+		return localVector;
 	}
 
 }
