@@ -1,3 +1,4 @@
+package BSS;
 
 import java.io.Serializable;
 
@@ -11,13 +12,11 @@ public class Messages implements Serializable{
 	public Messages(){
 
 		vectorClock = new int[DA_BSS_main.Total_Process_Num];
+		for(int i=0; i<vectorClock.length; i++){
+			vectorClock[i] = 0;
+		}
 	}
 	
-//	public String toString(){
-//		String s = "ACK";
-//		if(type == 0) s = "MESSAGE";
-//		return "{"+s+"}"+msg+" from Process "+idSender+" at ["+timestamp+"]";
-//	}
 	
 	public boolean equals(Object obj){
 		if(obj == null) return false;

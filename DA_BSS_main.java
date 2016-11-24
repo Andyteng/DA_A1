@@ -1,14 +1,15 @@
-
+package BSS;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.util.Arrays;
 
 public class DA_BSS_main {
 	
 	public static int Total_Process_Num = 3;
-	public static int Total_Msg_Num = 2;
+	public static int Total_Msg_Num = 1;
 	
 	public static void main(String[] args) throws Exception{
 		DA_BSS da;
@@ -39,10 +40,8 @@ public class DA_BSS_main {
 			}
 		}
 		
-		
 		for(int i=0; i<Total_Process_Num; i++){
 			proc[i].setProcessesNetwork(proc);
-//			proc[i].setStartTime(timeStart);
 		}
 
 		for(int i=0; i<Total_Process_Num; i++){
@@ -53,10 +52,16 @@ public class DA_BSS_main {
 					for(int j=0; j<Total_Msg_Num; j++){
 						
 						try{
-							Thread.sleep((long)(Math.random() * 500));
+							if(countP == 0)
+							Thread.sleep(100);
+							if(countP == 1)
+							Thread.sleep(750);
+							if(countP == 2)
+							Thread.sleep(1200);
+							
 							daobj.setLocalVector(countP);
 							Messages testmsg = new Messages();
-							testmsg.msg = "The Message P"+countP+" N"+j;
+							testmsg.msg = "the Message P"+countP+" N"+j;
 							testmsg.idSender = countP;
 							testmsg.vectorClock = daobj.getLocalVector();
 							daobj.broadcastMessage(testmsg);
