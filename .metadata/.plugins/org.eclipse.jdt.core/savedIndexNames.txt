@@ -1,2 +1,0 @@
-INDEX VERSION 1.129+/Users/Andyteng/Dropbox/TUD/Y1/IN4150_Distributed Algorithms/DA_A1/.metadata/.plugins/org.eclipse.jdt.core
-2034881262.index
