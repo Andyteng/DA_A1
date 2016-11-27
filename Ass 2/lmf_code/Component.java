@@ -2,115 +2,144 @@ package Afek;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.UUID;
+
+import javax.swing.text.html.HTMLEditorKit.LinkController;
 
 public class Component extends UnicastRemoteObject implements Component_RMI{
 	
-	static int Pro_id;
-	static int id;
+	int Pro_id;
+	UUID id = UUID.randomUUID();
+	UUID ownerID;
 	int[] candidateArray;
-	static int[] ambionArray;
+	int pro_Level;
+	int owner_Level;
 	Component_RMI proc[] = new Component_RMI[Component_main.Total_Pro_Num];
+	ArrayList<Component_RMI> eRest = new ArrayList<Component_RMI>();
+	ArrayList<Component_RMI> eSent = new ArrayList<Component_RMI>();
+	ArrayList<Messages> candidates;
+	ArrayList<Messages> allRequests;
 	
 	protected Component(int i) throws RemoteException {
 		super();
 		// TODO Auto-generated constructor stub
 		this.Pro_id = i;
-		this.id = (int) Math.random()*100;
+		pro_Level =-1;
+		owner_Level =pro_Level;
+		ownerID = this.id;
 	}
 
 	private static final long serialVersionUID = 1L;
-
-	public static int[] randomObj(int n){  
-		 
-	    int[] result = new int[n];  
-	    int count = 0;  
-	    while(count < n) {  
-	        int num = (int)(Math.random()* Component_main.Total_Pro_Num +1);
-	        boolean flag = true;  
-	        for (int j = 0; j < n; j++) {  
-	            if(num == result[j] || num == Pro_id){  
-	                flag = false;  
-	                break;  
-	            }  
-	        }  
-	        for(int i=0; i<ambionArray.length; i++){
-	        	if(num == ambionArray[i]){
-	        		flag =false;
-	        		break;
-	        	}
-	        }
-	        if(flag){  
-	            result[count] = num;  
-	            count++;  
-	        }  
-	    }  
-	    for (int j = 0; j < n; j++) {
-	    	result[j] -= 1;
-	    }
-	    return result;  
-	}
 	
 	@Override
-	public void candidate(Messages msg) throws RemoteException {
+	public void startcandidate() throws RemoteException {
 		// TODO Auto-generated method stub
-		int num = (int) Math.pow(2, msg.level);
-		int[] ambition = randomObj(num);
-		
-		for(int i = 0; i<num; i++){
-			int count =ambition[i];
-			Thread tr = new Thread("can_"+i){
-				public void run(){
-					try{
-						msg.level +=1;
-						proc[count].ordinary(msg);
-					} catch(RemoteException e){
-						e.printStackTrace();
-					}
+		pro_Level += 1;
+		if(pro_Level%2 == 0){
+			if(eRest.size() == 0){
+				System.out.println("Pro "+Pro_id+" Elected! "+id);
+				return;
+			}
+			else{
+				int k = Math.min((int)(Math.pow(2, pro_Level/2)), eRest.size());
+				for(int i= 0; i<k; i++){
+					eSent.add(eRest.remove(0));
 				}
-			};
-			tr.start();
-		}
-		
-		
-		
-		
-	}
-
-	@Override
-	public void ordinary(Messages msg) throws RemoteException {
-		// TODO Auto-generated method stub
-		if(msg.id >= id){
-			
-			
-			
+				
+				for(Component_RMI p:eSent){
+					Messages msg = new Messages(getprocid());
+					msg.level= pro_Level;
+					msg.id = id;
+					p.requestElection(msg);
+				}
+				//problem here
+				for(Component_RMI p:eRest){
+					Messages msg = new Messages(getprocid());
+					msg.level= -1;
+					msg.id = id;
+					p.requestElection(msg);
+				}
+			}
 		}
 		else{
 			
 		}
+		
+	}
+	
+	public void requestElection(Messages msg) throws RemoteException{
+		allRequests.add(msg);
+		if(msg.level >-1) candidates.add(msg);
+		if(allRequests.size() == proc.length -1){
+			ordinary();
+		}
+		
+		
+	}
+	
+
+	@Override
+	public void ordinary() throws RemoteException {
+		// TODO Auto-generated method stub
+		int maxLevel =candidates.get(0).level;
+		int link_id = candidates.get(0).pro_id;
+		UUID maxid = candidates.get(0).id;
+		
+		for(Messages s: candidates){
+			if(s.level > maxLevel){
+				maxLevel =s.level;
+				link_id = s.pro_id;
+				maxid = s.id;
+			}
+			else if(s.level == maxLevel){
+				if(s.id.getLeastSignificantBits() > maxid.getLeastSignificantBits()){
+					maxLevel =s.level;
+					link_id = s.pro_id;
+					maxid = s.id;
+				}
+			}
+		}
+		if(maxLevel>owner_Level||(maxLevel==owner_Level &&
+		maxid.getLeastSignificantBits()>ownerID.getLeastSignificantBits())){
+			owner_Level = maxLevel;
+			ownerID = maxid;
+			proc[link_id].acknowledge();//to be continued
+			
+		}
+		
+		
 	}
 
 	@Override
 	public void setProcessesNetwork(Component_RMI[] proc) throws RemoteException {
 		// TODO Auto-generated method stub
 		this.proc = proc;
+		for(Component_RMI i:proc){
+			eRest.add(i);
+		}
+		eRest.remove(Pro_id);
+		
 	}
 
-	@Override
-	public void setcandidateArray(int[] arr) throws RemoteException {
-		// TODO Auto-generated method stub
-		this.candidateArray = arr;
-	}
 
-	@Override
-	public int getid() throws RemoteException {
-		// TODO Auto-generated method stub
-		return this.id;
-	}
 
 	@Override
 	public int getprocid() throws RemoteException {
 		// TODO Auto-generated method stub
-		return this.Pro_id;
+		return Pro_id;
+	}
+
+	@Override
+	public void setLevel() throws RemoteException {
+		// TODO Auto-generated method stub
+		pro_Level += 1;
+	}
+
+	@Override
+	public void acknowledge() throws RemoteException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -57,7 +57,7 @@ public class Component_main {
 			Naming.rebind("rmi://localhost/AFEK"+i, c);
 		}
 		
-		Component_RMI proc[] = new Component_RMI[Total_Pro_Num];
+		Component_RMI[] proc = new Component_RMI[Total_Pro_Num];
 		
 		boolean ready = false;
 		while(!ready){
@@ -71,7 +71,6 @@ public class Component_main {
 			}
 		}
 		
-		
 		//Specify how many process participate earliest		
 		int startnum = randomNumber() + 1; 
 		//Decide which process start earliest
@@ -81,25 +80,17 @@ public class Component_main {
 		
 		for(int i =0; i<Total_Pro_Num; i++){
 			proc[i].setProcessesNetwork(proc);
-			proc[i].setcandidateArray(candidateArray);
 		}
 		
 		
 		for(int i=0; i<startnum; i++){
 			Component_RMI daobi = proc[candidateArray[i]];
-			Thread tr = new Thread("Main_"+i){
-				public void run(){
-					try{
-						Thread.sleep(50);
-						Messages msg = new Messages(daobi.getid());
-						msg.level += 1;
-						daobi.candidate(msg);
-					}catch(Exception e){
-						e.printStackTrace();
-					}
+				try{
+					daobi.startcandidate();
+				}catch(Exception e){
+					e.printStackTrace();
 				}
-			};
-			tr.start();
+
 		}
 		
 		
