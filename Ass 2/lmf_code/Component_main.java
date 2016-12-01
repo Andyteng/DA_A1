@@ -79,6 +79,7 @@ public class Component_main {
 		
 		for(int i =0; i<Total_Pro_Num; i++){
 			proc[i].setProcessesNetwork(proc);
+			System.out.println(proc[i].getid());
 		}
 		
 		
@@ -93,8 +94,13 @@ public class Component_main {
 		}
 		
 		for(int i =0; i<Total_Pro_Num; i++){
-			proc[i].startcandidate();
+			try{
+				proc[i].startcandidate();
+			} catch(RemoteException e){
+				
+			}
 		}
+		
 		
 		
 		

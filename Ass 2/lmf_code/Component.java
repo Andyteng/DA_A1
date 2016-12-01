@@ -3,6 +3,7 @@ package Afek;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.UUID;
 
 
@@ -43,39 +44,64 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 			pro_Level += 1;
 			if(pro_Level%2 == 0){
 				if(eRest.size() == 0){
-					System.out.println("Pro "+Pro_id+" Elected! "+id.getLeastSignificantBits());
+					System.out.println("Pro "+Pro_id+" Elected! "+id.getMostSignificantBits());
 					return;
 				}
 				else{
 					k = Math.min((int)(Math.pow(2, pro_Level/2)), eRest.size());
+//					Iterator<Component_RMI> eRestit = eRest.iterator();
+					Component_RMI[] c = new Component_RMI[k];
+					int size =eRest.size();
+					
 					for(int i= 0; i<k; i++){
+//						int j = (int)(Math.random()*size);
+//						c[i] = eRest.get(j);
+//						for(Iterator<Component_RMI> eRestit = eRest.iterator(); eRestit.hasNext();){
+//							if(eRestit.next() == c[i]){
+//								eSent.add(c[i]);
+//								eRestit.remove();
+//							}
+//						}
+//						size--;
 						eSent.add(eRest.remove(0));
 					}
-					
-					for(Component_RMI p:eSent){
+					for(Iterator<Component_RMI> eSentit = eSent.iterator(); eSentit.hasNext();){
 						Messages msg = new Messages(getprocid());
 						msg.level= pro_Level;
 						msg.id = id;
-						p.requestElection(msg);
+						try{
+							eSentit.next().requestElection(msg);
+						} catch(RemoteException e){
+							
+						}
 					}
 					//problem here
-					for(Component_RMI p:eRest){
+					for(Iterator<Component_RMI> eRestit = eRest.iterator(); eRestit.hasNext();){
 						Messages msg = new Messages(getprocid());
 						msg.level= -1;
 						msg.id = id;
-						p.requestElection(msg);
+						try{
+						eRestit.next().requestElection(msg);
+						} catch(RemoteException e){
+							
+						}
 					}
 					
-					for(Component_RMI p:eTemp){
+					for(Iterator<Component_RMI> eTempit = eTemp.iterator(); eTempit.hasNext();){
 						Messages msg = new Messages(getprocid());
 						msg.level= -1;
 						msg.id = id;
-						p.requestElection(msg);
+						try{
+							eTempit.next().requestElection(msg);
+						} catch(RemoteException e){
+							
+						}
 					}
 					
 					for(int i=0; i<eSent.size(); i++){
-						eTemp.add(eSent.remove(0));
+						eTemp.add(eSent.get(i));
 					}
+					eSent.clear();
 				}
 			}
 		}
@@ -94,10 +120,20 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 	}
 	
 	public void requestElection(Messages msg) throws RemoteException{
-		allRequests.add(msg);
-		if(msg.level >-1) candidates.add(msg);
+		
+		
+			allRequests.add(msg);
+		
+		if(msg.level >-1) {
+		
+				candidates.add(msg);
+			
+		}
+			
 		if(allRequests.size() == proc.length -1){
-			allRequests.clear();
+		
+				allRequests.clear();
+		
 			ordinary();
 		}
 		
@@ -121,7 +157,7 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 					maxid = s.id;
 				}
 				else if(s.level == maxLevel){
-					if(s.id.getLeastSignificantBits() > maxid.getLeastSignificantBits()){
+					if(s.id.getMostSignificantBits() > maxid.getMostSignificantBits()){
 						maxLevel =s.level;
 						link_id = s.pro_id;
 						maxid = s.id;
@@ -132,7 +168,7 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 			candidates.clear();
 			
 			if(maxLevel>owner_Level||(maxLevel==owner_Level &&
-			maxid.getLeastSignificantBits()>ownerID.getLeastSignificantBits())){
+			maxid.getMostSignificantBits()>ownerID.getMostSignificantBits())){
 				owner_Level = maxLevel;
 				ownerID = maxid;
 				proc[link_id].acknowledge(true);//to be continued
@@ -196,7 +232,10 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 		if(ackture+ackfalse == proc.length-1){
 			if(ackture <k) isCandidate =false;
 			else{
-				if(isCandidate) pro_Level++;
+				if(isCandidate){
+					pro_Level++;
+					owner_Level = pro_Level;
+				}
 			}
 			ackture =0;
 			ackfalse = 0;
@@ -210,6 +249,12 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 	public void setCandidate() throws RemoteException {
 		// TODO Auto-generated method stub
 		isCandidate = true;
+	}
+
+	@Override
+	public long getid() throws RemoteException {
+		// TODO Auto-generated method stub
+		return id.getMostSignificantBits();
 	}
 
 }
