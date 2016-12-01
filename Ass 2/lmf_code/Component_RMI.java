@@ -10,5 +10,6 @@ public interface Component_RMI extends Remote{
 	public int getprocid() throws RemoteException;
 	public void setLevel() throws RemoteException;
 	public void requestElection(Messages msg) throws RemoteException;
-	public void acknowledge() throws RemoteException;
+	public void acknowledge(boolean ack) throws RemoteException;
+	public void setCandidate() throws RemoteException;
 }

@@ -5,7 +5,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 
@@ -86,13 +85,16 @@ public class Component_main {
 		for(int i=0; i<startnum; i++){
 			Component_RMI daobi = proc[candidateArray[i]];
 				try{
-					daobi.startcandidate();
+					daobi.setCandidate();
 				}catch(Exception e){
 					e.printStackTrace();
 				}
 
 		}
 		
+		for(int i =0; i<Total_Pro_Num; i++){
+			proc[i].startcandidate();
+		}
 		
 		
 		
