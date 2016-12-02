@@ -1,1 +1,1 @@
-java -Djava.security.policy=my.policy DA_BSS_main
+java -Djava.security.policy=my.policy DA_main

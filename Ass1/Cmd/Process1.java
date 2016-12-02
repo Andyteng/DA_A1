@@ -1,5 +1,3 @@
-
-
 import java.rmi.Naming;
 
 public class Process1 {
@@ -7,7 +5,8 @@ public class Process1 {
 	static int i =1;
 	public static void main(String[] args) throws Exception{
 		
-		DA_BSS_RMI proc = (DA_BSS_RMI) Naming.lookup("rmi://localhost/DA"+i);        //Now we have Total_Process_Num of processes
+		DA_BSS_RMI proc = (DA_BSS_RMI) Naming.lookup("rmi://localhost:1098/DA"+i);        //Now we have Total_Process_Num of processes
+		proc.setProcessesNetwork();
 		
 		Thread tr = new Thread("Main_"+i){
 			public void run(){
