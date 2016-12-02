@@ -12,7 +12,7 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 	ArrayList<Messages> queue;
 	DA_BSS_RMI[] proc;
 	int id;
-	public int[] localVector = new int[DA_BSS_main.Total_Process_Num];
+	public int[] localVector = new int[3];
 	
 	protected DA_BSS(int id) throws RemoteException{
 		super();
@@ -32,6 +32,7 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 				Thread tr = new Thread("t_"+(i++)){
 					public void run(){
 						try{
+						
 							if(msg.idSender == 0 && Bss_I.getId() == 1)   //Test a simple example
 							Thread.sleep(500);
 							if(msg.idSender == 0 && Bss_I.getId() == 2)
@@ -68,13 +69,13 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 	//That is V + ej >= Vm
 	public boolean deliver(Messages msg){
 		
-		int[] compareVector = new int[DA_BSS_main.Total_Process_Num];
-		for(int i=0; i<DA_BSS_main.Total_Process_Num; i++){
+		int[] compareVector = new int[proc.length];
+		for(int i=0; i<proc.length; i++){
 			compareVector[i] = 	localVector[i];
 		}
 		compareVector[msg.idSender] += 1;
 		boolean deliver = true;
-		for(int i=0; i<DA_BSS_main.Total_Process_Num; i++){
+		for(int i=0; i<proc.length; i++){
 			if(compareVector[i] < msg.vectorClock[i]){
 				deliver = false;
 			}

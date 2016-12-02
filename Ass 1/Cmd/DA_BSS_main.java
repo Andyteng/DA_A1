@@ -1,10 +1,9 @@
-package BSS;
+
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.util.Arrays;
 
 public class DA_BSS_main {
 	
@@ -43,39 +42,7 @@ public class DA_BSS_main {
 		for(int i=0; i<Total_Process_Num; i++){
 			proc[i].setProcessesNetwork(proc);
 		}
-
-		for(int i=0; i<Total_Process_Num; i++){
-			int countP = i;
-			DA_BSS_RMI daobj = proc[i];
-			Thread tr = new Thread("Main_"+i){
-				public void run(){
-					for(int j=0; j<Total_Msg_Num; j++){
-						
-						try{
-							if(countP == 0)           //Test a simple example
-							Thread.sleep(100);
-							if(countP == 1)
-							Thread.sleep(750);
-							if(countP == 2)
-							Thread.sleep(1200);
-							
-//							Thread.sleep((long)(Math.random()*500));
-							
-							daobj.setLocalVector(countP);
-							Messages testmsg = new Messages();                //Define the message to be sent
-							testmsg.msg = "the Message P"+countP+" N"+j;
-							testmsg.idSender = countP;
-							testmsg.vectorClock = daobj.getLocalVector();
-							daobj.broadcastMessage(testmsg);
-						}
-						catch (Exception e) {
-							// TODO: handle exception
-							e.printStackTrace();
-						}
-					}
-				}
-			};
-			tr.start();
-		}
+		
+		System.out.println("Server is running!");
 	}
 }
