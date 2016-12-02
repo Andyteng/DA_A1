@@ -105,7 +105,7 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 						}
 						eSent.clear();
 					} catch(ConcurrentModificationException e){
-						
+						//e.printStackTrace();
 					}
 				}
 			}
