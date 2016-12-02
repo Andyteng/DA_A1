@@ -11,7 +11,7 @@ public class Messages implements Serializable{
 	
 	public Messages(){
 
-		vectorClock = new int[DA_BSS_main.Total_Process_Num];
+		vectorClock = new int[3];
 		for(int i=0; i<vectorClock.length; i++){
 			vectorClock[i] = 0;
 		}

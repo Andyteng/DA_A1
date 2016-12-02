@@ -8,6 +8,7 @@ public class Process0 {
 	public static void main(String[] args) throws Exception{
 		
 		DA_BSS_RMI proc = (DA_BSS_RMI) Naming.lookup("rmi://localhost/DA"+i);        //Now we have Total_Process_Num of processes
+		proc.setProcessesNetwork();
 		
 		Thread tr = new Thread("Main_"+i){
 			public void run(){

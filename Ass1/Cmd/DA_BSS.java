@@ -1,5 +1,7 @@
-
 import java.util.Iterator;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -10,7 +12,7 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 	private static final long serialVersionUID = 1L;
 	
 	ArrayList<Messages> queue;
-	DA_BSS_RMI[] proc;
+	DA_BSS_RMI[] proc = new DA_BSS_RMI[3];
 	int id;
 	public int[] localVector = new int[3];
 	
@@ -32,7 +34,6 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 				Thread tr = new Thread("t_"+(i++)){
 					public void run(){
 						try{
-						
 							if(msg.idSender == 0 && Bss_I.getId() == 1)   //Test a simple example
 							Thread.sleep(500);
 							if(msg.idSender == 0 && Bss_I.getId() == 2)
@@ -46,9 +47,7 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 							if(msg.idSender == 2 && Bss_I.getId() == 0)
 							Thread.sleep(600);
 							if(msg.idSender == 2 && Bss_I.getId() == 1)
-							Thread.sleep(300);	
-							
-//							Thread.sleep((long)(Math.random()*500));					
+							Thread.sleep(300);					
 							
 							Bss_I.receiveMessage(msg);    // After a certain second, process should receive some messages
 						} 
@@ -92,6 +91,7 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 			for(DA_BSS_RMI Bss_s : proc){
 				System.out.println("Process"+Bss_s.getId()+" 's localvector is "+Arrays.toString(Bss_s.getLocalVector()));   
 			}
+			System.out.println("");
 			while(queue != null){         //If there are messages in the buffer, examine it whether it can be delivered in this round
 				boolean end = true;
 				for(Iterator<Messages> it = queue.iterator();it.hasNext();){
@@ -104,6 +104,7 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 						for(DA_BSS_RMI Bss_s : proc){
 							System.out.println("Process"+Bss_s.getId()+" 's localvector is "+Arrays.toString(Bss_s.getLocalVector()));
 						}
+						System.out.println("");
 					}
 				}
 				if(end) break;
@@ -113,13 +114,23 @@ public class DA_BSS extends UnicastRemoteObject implements DA_BSS_RMI {
 			queue.add(msg);
 			System.out.println(msg.msg+" cannot be delivered now!");
 			System.out.println("The size of queue in process"+id+ " now is "+queue.size());
+			System.out.println("");
 		}
 	}
 
 	@Override
-	public void setProcessesNetwork(DA_BSS_RMI[] proc) throws RemoteException {
+	public void setProcessesNetwork() throws RemoteException {
 		// TODO Auto-generated method stub
-		this.proc = proc;
+		try{
+			proc[0] = (DA_BSS_RMI) Naming.lookup("rmi://localhost/DA0");
+			proc[1] = (DA_BSS_RMI) Naming.lookup("rmi://localhost:1098/DA1");
+			proc[2] = (DA_BSS_RMI) Naming.lookup("rmi://localhost:1097/DA2");
+		} catch(NotBoundException e){
+			
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+		}
+		
 	}
 
 	@Override
