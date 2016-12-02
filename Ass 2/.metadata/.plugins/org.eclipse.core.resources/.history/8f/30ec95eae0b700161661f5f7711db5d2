@@ -1,0 +1,44 @@
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class CandidateComponent extends UnicastRemoteObject implements Component_RMI{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private int level;
+	private int id;
+	private boolean killed;
+
+	protected CandidateComponent(int i) throws RemoteException {
+		this.level = -1;
+		this.id = i;
+		
+	}
+
+	@Override
+	public void receive(int level, int id) throws RemoteException {
+		System.out.println("Process " + this.id + " Level" + this.level + " has reveived message: Level" + level + ", ID" + id);
+		send(level,id);
+	}
+
+	@Override
+	public void send(int level, int id) throws RemoteException {
+		System.out.println("Process " + this.id + " Level" + this.level + " has reveived message: Level" + level + ", ID" + id);
+		receive(level,id);
+	}
+
+	@Override
+	public void setRegistrySet(Component_RMI[] c) throws RemoteException {
+		// TODO Auto-generated method stub
+		System.out.println(this.id + "has been initialised.");
+		if (!this.killed){
+			sendNext();
+		}
+	}
+	public void sendNext() throws RemoteException{
+		
+	}
+
+}

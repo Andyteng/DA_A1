@@ -1,0 +1,45 @@
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class OrdinaryComponent extends UnicastRemoteObject implements Component_RMI{
+
+	private Component_RMI potential_owner;
+	private Component_RMI owner;
+	private int id;
+	private int level;
+	private int owner_id;
+	
+	protected OrdinaryComponent() throws RemoteException {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	
+	public OrdinaryComponent(int i) throws RemoteException {
+		potential_owner = null;
+		owner = null;
+		id = i;
+		level = -1;
+		owner_id = -1;
+	}
+
+	@Override
+	public void setRegistrySet(Component_RMI[] c) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void receive(int level, int id) throws RemoteException {
+		System.out.println("Process " + this.id + " Level" + this.level + " has reveived message: Level" + level + ", ID" + id);
+		send(level, id);
+		
+	}
+
+	@Override
+	public void send(int level, int id) throws RemoteException {
+		System.out.println("Process " + this.id + " Level" + this.level + " has reveived message: Level" + level + ", ID" + id);
+		receive(level,id);
+		
+	}	
+
+}

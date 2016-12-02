@@ -1,0 +1,63 @@
+import java.net.MalformedURLException;
+import java.rmi.NotBoundException;
+import java.rmi.RMISecurityManager;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.util.ArrayList;
+
+
+public class Component_main {
+	
+	public static Registry registry;
+	public static int candidateAmount;
+	public static int ordinaryAmount;
+	public static Server server;
+	public static Component_RMI[] RMI_IDS; 
+	
+	public static void main(String[] args) throws Exception{
+		
+		candidateAmount = 2;
+		ordinaryAmount = 2;
+		
+		ArrayList<Component_RMI> components = new ArrayList<Component_RMI>();
+		
+		try {
+			registry = LocateRegistry.createRegistry(1099);
+		} catch (RemoteException e) {
+			System.err.println("Sever exception:" + e.toString());
+			e.printStackTrace();
+		}
+		for(int i=0; i<candidateAmount; i++){
+			CandidateComponent new_CC = new CandidateComponent(i+ordinaryAmount, server);
+			components.add(new_CC);
+			registry.rebind("CP"+(i+1), new_CC );
+		}
+		for(int i=0; i<ordinaryAmount; i++){
+			OrdinaryComponent new_OC = new OrdinaryComponent(server, i);
+			components.add(new_OC);
+			registry.rebind("OP"+(i+1), new_OC );
+		}	
+		
+		System.out.println("started");
+		setRegistry();
+
+}
+	public static void setRegistry() throws RemoteException, NotBoundException{
+		int regLength = registry.list().length;
+		RMI_IDS = new Component_RMI[regLength];
+		for(int i=0;i<regLength;i++){
+			RMI_IDS[i] = (Component_RMI) registry.lookup(registry.list()[i]);
+		}
+		for(int i=0;i<RMI_IDS.length;i++){
+			Component_RMI RMI_ID = RMI_IDS[i];
+			new Thread (() -> {
+				try{
+					RMI_ID.setRegistrySet(RMI_IDS);
+				}catch(Exception e){
+					e.printStackTrace();
+			}
+			}).start();
+		}
+	}
+}
