@@ -1,1 +1,0 @@
-java -Djava.security.policy=my.policy DA_main
