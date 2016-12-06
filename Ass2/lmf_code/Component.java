@@ -1,151 +1,139 @@
-package Afek;
-
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.UUID;
-
 
 public class Component extends UnicastRemoteObject implements Component_RMI{
 	
+	private static final long serialVersionUID = 1L;
 	int Pro_id;
+	int Total_Pro_Num;
 	UUID id = UUID.randomUUID();
-	UUID ownerID;
-	int[] candidateArray;
 	int pro_Level;
-	int owner_Level;
+	boolean isCandidate;
+	Component_RMI proc[];
+	CopyOnWriteArrayList<Component_RMI> eRest = new CopyOnWriteArrayList<Component_RMI>();
+	CopyOnWriteArrayList<Component_RMI> eSent = new CopyOnWriteArrayList<Component_RMI>();
+	int test_num = 0;
+	CopyOnWriteArrayList<Messages> candidateMsg = new CopyOnWriteArrayList<Messages>();
+	int comparison = 0;
 	int ackture = 0;
 	int ackfalse = 0;
-	int k = 0;
-	Component_RMI proc[] = new Component_RMI[Component_main.Total_Pro_Num];
-	ArrayList<Component_RMI> eRest = new ArrayList<Component_RMI>();
-	ArrayList<Component_RMI> eSent = new ArrayList<Component_RMI>();
-	ArrayList<Component_RMI> eTemp = new ArrayList<Component_RMI>();
-	ArrayList<Messages> candidates = new ArrayList<Messages>();
-	ArrayList<Messages> allRequests = new ArrayList<Messages>();
-	boolean isCandidate = false;
+	int t = 0;
 	
-	protected Component(int i) throws RemoteException {
+	protected Component(int i, int j) throws RemoteException {
 		super();
 		// TODO Auto-generated constructor stub
-		this.Pro_id = i;
-		pro_Level =-1;
-		owner_Level =pro_Level;
-		ownerID = this.id;
+		Pro_id = i;
+		pro_Level = -1;
+		Total_Pro_Num = j;
+		proc = new Component_RMI[j];
+		int bool = (int)(Math.random()*2);
+		if(bool == 0) isCandidate = false;
+		if(bool == 1) isCandidate = true;
 	}
 
-	private static final long serialVersionUID = 1L;
+	@Override
+	public void setProcessesNetwork() throws RemoteException{
+		// TODO Auto-generated method stub
+		for(int i=0; i<Total_Pro_Num; i++){
+			try{
+				int port = i+1099;
+				proc[i] = (Component_RMI) Naming.lookup("rmi://localhost:"+port+"/AFEK"+i);
+			} catch(NotBoundException e){
+				
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+			}
+		}
+		
+		for(Component_RMI i:proc){
+			eRest.add(i);
+		}
+		eRest.remove(Pro_id);	
+	}
+	
+	@Override
+	public boolean IsCandidate() throws RemoteException {
+		// TODO Auto-generated method stub
+		return isCandidate;
+	}
+	
+	@Override
+	public int getprocid() throws RemoteException {
+		// TODO Auto-generated method stub
+		return Pro_id;
+	}
 	
 	@Override
 	public void startcandidate() throws RemoteException {
 		// TODO Auto-generated method stub
+		pro_Level += 1;
+		int round = pro_Level/2 + 1;
 		if(isCandidate){
-			pro_Level += 1;
 			if(pro_Level%2 == 0){
 				if(eRest.size() == 0){
-					System.out.println("Pro "+Pro_id+" Elected! "+id.getMostSignificantBits());
+					System.out.println("Pro "+Pro_id+"! I am Elected! "+id.getMostSignificantBits());
 					return;
 				}
 				else{
-					try{
-						System.out.println("The process"+Pro_id+" still have "+eRest.size()+" pro left to test.");
-						k = Math.min((int)(Math.pow(2, pro_Level/2)), eRest.size());
-						Component_RMI[] c = new Component_RMI[k];
-						int size =eRest.size();
-						
-						for(int i= 0; i<k; i++){
-							int j = (int)(Math.random()*size);
-							c[i] = eRest.get(j);
-							for(Iterator<Component_RMI> eRestit = eRest.iterator(); eRestit.hasNext();){
-								if(eRestit.next() == c[i]){
-									eSent.add(c[i]);
-									eRestit.remove();
-								}
-							}
-							size--;
-//							eSent.add(eRest.remove(0));
-						}
-						for(Iterator<Component_RMI> eSentit = eSent.iterator(); eSentit.hasNext();){
-							Messages msg = new Messages(getprocid());
-							msg.level= pro_Level;
-							msg.id = id;
-							try{
-								eSentit.next().requestElection(msg);
-							} catch(RemoteException e){
-								
-							}
-						}
-						//problem here
-						for(Iterator<Component_RMI> eRestit = eRest.iterator(); eRestit.hasNext();){
-							Messages msg = new Messages(getprocid());
-							msg.level= -1;
-							msg.id = id;
-							try{
-							eRestit.next().requestElection(msg);
-							} catch(RemoteException e){
-								
-							}
-						}
-						
-						for(Iterator<Component_RMI> eTempit = eTemp.iterator(); eTempit.hasNext();){
-							Messages msg = new Messages(getprocid());
-							msg.level= -1;
-							msg.id = id;
-							try{
-								eTempit.next().requestElection(msg);
-							} catch(RemoteException e){
-								
-							}
-						}
-						
-						for(int i=0; i<eSent.size(); i++){
-							eTemp.add(eSent.get(i));
-						}
-						eSent.clear();
-					} catch(ConcurrentModificationException e){
-						
+					System.out.println("This is round "+round+". "+" --The process"+Pro_id+" still have "+eRest.size()+" pro left to test.");
+					eSent.clear();
+					test_num = Math.min((int)(Math.pow(2, pro_Level/2)), eRest.size());
+					for(int i= 0; i<test_num; i++){
+						int j = (int)(Math.random()*eRest.size());
+						eSent.add(eRest.remove(j));
 					}
+
+					System.out.print("I want to check: ");
+					for(Component_RMI p : eSent){
+						System.out.print(" "+p.getprocid());
+					}
+					System.out.println(" now.");
+
+					for(Component_RMI p : eSent){
+						Messages msg = new Messages(Pro_id);
+						msg.level= pro_Level;
+						msg.id = id;
+						p.compareTime();
+						Thread tr = new Thread("t_"+(t++)){ 
+							public void run(){ 
+ 								try{ 
+ 									Thread.sleep(1000);
+ 									p.receiveRequest(msg);
+ 								} catch (RemoteException e) { 
+									e.printStackTrace(); 
+ 								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}  
+
+ 							} 
+ 						}; 
+ 						tr.start();
+					}		
 				}
+			}
+			else{
+				System.out.println(round+" round passed!");
+				startcandidate();
 			}
 		}
 		else{
-			for(Component_RMI p: proc){
-				if(p.getprocid() != Pro_id){
-					Messages msg = new Messages(getprocid());
-					msg.level= -1;
-					msg.id = id;
-					p.requestElection(msg);
-				}				
-			}
-			
-		}
-		
-	}
-	
-	public void requestElection(Messages msg) throws RemoteException{
-		
-		allRequests.add(msg);
-		if(msg.level >-1) {
-				candidates.add(msg);			
-		}	
-		if(allRequests.size() == proc.length -1){
-			allRequests.clear();
-			ordinary();
+			System.out.println("I am not candidate any more!");
 		}
 	}
-	
+		
+	public void receiveRequest(Messages msg) throws RemoteException{
 
-	public void ordinary() throws RemoteException {
-		// TODO Auto-generated method stub
-		if(candidates.size()>0){
-		
-			int maxLevel =candidates.get(0).level;
-			int link_id = candidates.get(0).pro_id;
-			UUID maxid = candidates.get(0).id;
-			
-			for(Messages s: candidates){
+		candidateMsg.add(msg);
+		if(candidateMsg.size() == comparison){
+			int maxLevel =candidateMsg.get(0).level;
+			int link_id = candidateMsg.get(0).pro_id;
+			UUID maxid = candidateMsg.get(0).id;
+			for(Messages s: candidateMsg){
 				if(s.level > maxLevel){
 					maxLevel =s.level;
 					link_id = s.pro_id;
@@ -159,48 +147,40 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 					}
 				}
 			}
-			
-			candidates.clear();
-			
-			if(maxLevel>owner_Level||(maxLevel==owner_Level &&
-			maxid.getMostSignificantBits()>ownerID.getMostSignificantBits())){
-				owner_Level = maxLevel;
-				ownerID = maxid;
-				proc[link_id].acknowledge(true);//to be continued
-				
+			comparison = 0;
+			System.out.println("       ************       ");
+			for(Messages s: candidateMsg){
+				System.out.println("Receive from "+s.pro_id+" but max is "+link_id);
+			}
+			System.out.println("--------------------------");
+			if(maxLevel>pro_Level||(maxLevel==pro_Level &&
+					maxid.getMostSignificantBits()>id.getMostSignificantBits())){
+				pro_Level = maxLevel;
+				id = maxid;
+				proc[link_id].acknowledge(true);//to be continued	
 			}
 			else{
 				proc[link_id].acknowledge(false);
 			}
 			
-			for(int i=0; i<proc.length;i++){
-				if((i!= Pro_id) && (i!= link_id)){
-					proc[i].acknowledge(false);
+			for(Messages s: candidateMsg){
+				if(s.pro_id != link_id){
+					proc[s.pro_id].acknowledge(false);
 				}
 			}
-		}
-		
-		else{
-			for(int i=0; i<proc.length;i++){
-				if(i!= Pro_id) proc[i].acknowledge(false);
+			candidateMsg.clear();	
+			if(!isCandidate){
+				pro_Level++;
 			}
 		}
-		
-		if(owner_Level > -1) owner_Level++;
-		
 	}
-
+	
 	@Override
-	public void setProcessesNetwork(Component_RMI[] proc) throws RemoteException {
+	public void compareTime() throws RemoteException {
 		// TODO Auto-generated method stub
-		this.proc = proc;
-		for(Component_RMI i:proc){
-			eRest.add(i);
-		}
-		eRest.remove(Pro_id);
-		
+		comparison++;
 	}
-
+	
 	@Override
 	public void acknowledge(boolean ack) throws RemoteException {
 		// TODO Auto-generated method stub
@@ -210,36 +190,19 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 		else{
 			ackfalse++;
 		}
-		if(ackture+ackfalse == proc.length-1){
-			if(ackture <k) isCandidate =false;
-			else{
-				if(isCandidate){
-					pro_Level++;
-					owner_Level = pro_Level;
-				}
+		if(ackture+ackfalse == test_num){
+			if(ackture < test_num){ 
+				isCandidate =false;
+				ackture = 0;
+				ackfalse = 0;
+				startcandidate();
 			}
-			ackture =0;
-			ackfalse = 0;
-			startcandidate();
-		}	
-	}
-
-	@Override
-	public int getprocid() throws RemoteException {
-		// TODO Auto-generated method stub
-		return Pro_id;
-	}
-
-	@Override
-	public void setLevel() throws RemoteException {
-		// TODO Auto-generated method stub
-		pro_Level += 1;
-	}
-
-	@Override
-	public void setCandidate() throws RemoteException {
-		// TODO Auto-generated method stub
-		isCandidate = true;
+			else{
+				ackture = 0;
+				ackfalse = 0;
+				startcandidate();
+			}
+		}
 	}
 
 	@Override
