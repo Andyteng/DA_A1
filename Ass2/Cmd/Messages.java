@@ -1,5 +1,3 @@
-package Afek;
-
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -9,7 +7,6 @@ public class Messages implements Serializable{
 	public UUID id;
 	public int level;
 	public int pro_id;
-	public int type;
 	
 	public Messages(int i){
 		pro_id = i;
