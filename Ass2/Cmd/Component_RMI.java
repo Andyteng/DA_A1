@@ -11,4 +11,5 @@ public interface Component_RMI extends Remote{
 	public long getid() throws RemoteException;
 	public void acknowledge(boolean ack) throws RemoteException;
 	public boolean isElected() throws RemoteException;
+	public void setLevel() throws RemoteException;
 }

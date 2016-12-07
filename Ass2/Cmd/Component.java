@@ -73,15 +73,18 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 		return Elected;
 	}
 
+	public void setLevel() throws RemoteException{
+		pro_Level++;
+	}
+
 	@Override
 	public void startcandidate() throws RemoteException {
 		// TODO Auto-generated method stub
-		pro_Level += 1;
 		int round = pro_Level/2 + 1;
 		if(isCandidate){
 			if(pro_Level%2 == 0){
 				if(eRest.size() == 0){
-					System.out.println("Pro "+Pro_id+"! I am Elected! "+id.getMostSignificantBits());
+					System.out.println("Pro "+Pro_id+"! I am Elected! "+id.getMostSignificantBits()+"\nWhen they go low, we go high!");
 					Elected = true;
 					return;
 				}
@@ -123,11 +126,11 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 				}
 			}
 			else{
-				System.out.println(round+" round passed!");
+				System.out.println(round+" round passed!\n");
 			}
 		}
 		else{
-			System.out.println("I am not candidate any more!");
+			
 		}
 	}
 		
@@ -175,9 +178,6 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 				}
 			}
 			candidateMsg.clear();	
-			if(!isCandidate){
-				pro_Level += 1;
-			}
 		}
 	}
 	
@@ -199,14 +199,13 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 		if(ackture+ackfalse == test_num){
 			if(ackture < test_num){ 
 				isCandidate =false;
+				System.out.println("I am not candidate any more!\n");
 				ackture = 0;
 				ackfalse = 0;
-				startcandidate();
 			}
 			else{
 				ackture = 0;
 				ackfalse = 0;
-				startcandidate();
 			}
 		}
 	}
