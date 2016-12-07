@@ -25,7 +25,13 @@ public class Process {
 			proc.setProcessesNetwork();
 			if(proc.IsCandidate()){
 				System.out.println("I am candidate!");
+			}
+			while(proc.IsCandidate()){
+				Thread.sleep(3000);
 				proc.startcandidate();
+				if(proc.isElected()){
+					break;
+				}
 			}
 		}catch (Exception e){
 			e.printStackTrace();

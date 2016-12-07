@@ -23,6 +23,7 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 	int ackture = 0;
 	int ackfalse = 0;
 	int t = 0;
+	boolean Elected = false;
 	
 	protected Component(int i, int j) throws RemoteException {
 		super();
@@ -68,6 +69,10 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 		return Pro_id;
 	}
 	
+	public boolean isElected() throws RemoteException{
+		return Elected;
+	}
+
 	@Override
 	public void startcandidate() throws RemoteException {
 		// TODO Auto-generated method stub
@@ -77,6 +82,7 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 			if(pro_Level%2 == 0){
 				if(eRest.size() == 0){
 					System.out.println("Pro "+Pro_id+"! I am Elected! "+id.getMostSignificantBits());
+					Elected = true;
 					return;
 				}
 				else{
@@ -118,7 +124,6 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 			}
 			else{
 				System.out.println(round+" round passed!");
-				startcandidate();
 			}
 		}
 		else{
@@ -150,14 +155,15 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 			comparison = 0;
 			System.out.println("       ************       ");
 			for(Messages s: candidateMsg){
-				System.out.println("Receive from "+s.pro_id+" but max is "+link_id);
+				int R = s.level/2 + 1;
+				System.out.println("Round: "+R+". Receive from "+s.pro_id+" and max is "+link_id);
 			}
 			System.out.println("--------------------------");
 			if(maxLevel>pro_Level||(maxLevel==pro_Level &&
 					maxid.getMostSignificantBits()>id.getMostSignificantBits())){
 				pro_Level = maxLevel;
 				id = maxid;
-				proc[link_id].acknowledge(true);//to be continued	
+				proc[link_id].acknowledge(true);
 			}
 			else{
 				proc[link_id].acknowledge(false);
@@ -170,7 +176,7 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 			}
 			candidateMsg.clear();	
 			if(!isCandidate){
-				pro_Level++;
+				pro_Level += 1;
 			}
 		}
 	}
