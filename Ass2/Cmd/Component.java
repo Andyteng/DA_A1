@@ -78,7 +78,7 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 	@Override
 	public void startcandidate() throws RemoteException {
 		// TODO Auto-generated method stub
-		pro_Level++;
+		// pro_Level++;
 		int round = pro_Level/2 + 1;
 			if(pro_Level%2 == 0){
 				if(eRest.size() == 0){
