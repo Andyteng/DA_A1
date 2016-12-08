@@ -20,15 +20,15 @@ public class Process {
 		
 		Component_RMI proc = (Component_RMI) Naming.lookup("rmi://localhost:"+port+"/AFEK"+i);	
 		try{
-			Thread.sleep(2000);
+			Thread.sleep(5000);
 			System.out.println(proc.getid());
 			proc.setProcessesNetwork();
 			if(proc.IsCandidate()){
-				System.out.println("I am candidate!");
+				System.out.println("I am candidate!\n");
 			}
 			while(proc.IsCandidate()){
-				proc.setLevel();
-				Thread.sleep(2000);
+				// proc.setLevel();
+				Thread.sleep(5000);
 				proc.startcandidate();
 				if(proc.isElected()){
 					break;
