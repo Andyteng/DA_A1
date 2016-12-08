@@ -26,12 +26,16 @@ public class Process {
 			if(proc.IsCandidate()){
 				System.out.println("I am candidate!\n");
 			}
-			while(proc.IsCandidate()){
-				proc.setLevel();
+			while(true){
 				Thread.sleep(3000);
-				proc.startcandidate();
-				if(proc.isElected()){
-					break;
+				if(proc.isAwaken()){
+					proc.setLevel();					
+				}
+				if(proc.IsCandidate()){
+					proc.startcandidate();
+					if(proc.isElected()){
+						break;
+					}
 				}
 			}
 		}catch (Exception e){

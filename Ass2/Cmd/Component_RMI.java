@@ -12,4 +12,5 @@ public interface Component_RMI extends Remote{
 	public boolean isElected() throws RemoteException;
 	public void setLevel() throws RemoteException;
 	public void ordinaryProcess() throws RemoteException;
+	public boolean isAwaken() throws RemoteException;
 }

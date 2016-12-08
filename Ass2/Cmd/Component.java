@@ -13,6 +13,7 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 	int id = (int)(Math.random()*1000);
 	int pro_Level;
 	boolean isCandidate;
+	boolean awaken;
 	Component_RMI proc[];
 	CopyOnWriteArrayList<Component_RMI> eRest = new CopyOnWriteArrayList<Component_RMI>();
 	CopyOnWriteArrayList<Component_RMI> eSent = new CopyOnWriteArrayList<Component_RMI>();
@@ -31,8 +32,14 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 		Total_Pro_Num = j;
 		proc = new Component_RMI[j];
 		int bool = (int)(Math.random()*2);
-		if(bool == 0) isCandidate = false;
-		if(bool == 1) isCandidate = true;
+		if(bool == 0){
+			isCandidate = false;
+			awaken = false;
+		}
+		if(bool == 1){
+			isCandidate = true;
+			awaken = true;
+		}
 	}
 
 	@Override
@@ -75,51 +82,60 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 		pro_Level++;
 	}
 
+	public boolean isAwaken() throws RemoteException{
+		return awaken;
+	}
+
+	@Override
+	public int getid() throws RemoteException {
+		// TODO Auto-generated method stub
+		return id;
+	}
+
 	@Override
 	public void startcandidate() throws RemoteException {
 		// TODO Auto-generated method stub
 		int round = pro_Level/2 + 1;
-			if(pro_Level%2 == 0){
-				if(eRest.size() == 0){
-					System.out.println("Pro "+Pro_id+"! I am Elected! "+id);
-					Elected = true;
-					return;
-				}
-				else{
-					System.out.println("--------------------------\nThis is round "+round+". "+" --The process"+Pro_id+" still have "+eRest.size()+" pro left to test.");
-					eSent.clear();
-					test_num = Math.min((int)(Math.pow(2, pro_Level/2)), eRest.size());
-					for(int i= 0; i<test_num; i++){
-						int j = (int)(Math.random()*eRest.size());
-						eSent.add(eRest.remove(j));
-					}
-
-					System.out.print("I want to check: ");
-					for(Component_RMI p : eSent){
-						System.out.print(" "+p.getprocid());
-					}
-					System.out.println(" now.");
-
-					for(Component_RMI p : eSent){
-						Messages msg = new Messages(Pro_id);
-						msg.level= pro_Level;
-						msg.id = id;
- 						p.receiveRequest(msg);
-					}		
-				}
+		if(pro_Level%2 == 0){
+			if(eRest.size() == 0){
+				System.out.println("Pro "+Pro_id+"! I am Elected! "+id);
+				Elected = true;
+				return;
 			}
 			else{
-				for(Component_RMI p : eSent){
-					p.ordinaryProcess();
+				System.out.println("**************************\nThis is round "+round+". "+" --The process"+Pro_id+" still have "+eRest.size()+" pro left to test.");
+				eSent.clear();
+				test_num = Math.min((int)(Math.pow(2, pro_Level/2)), eRest.size());
+				for(int i= 0; i<test_num; i++){
+					int j = (int)(Math.random()*eRest.size());
+					eSent.add(eRest.remove(j));
 				}
-			}
 
+				System.out.print("I want to check: ");
+				for(Component_RMI p : eSent){
+					System.out.print(" "+p.getprocid());
+				}
+				System.out.println(" now.");
+
+				for(Component_RMI p : eSent){
+					Messages msg = new Messages(Pro_id);
+					msg.level= pro_Level;
+					msg.id = id;
+ 					p.receiveRequest(msg);
+				}		
+			}
+		}
+		else{
+			for(Component_RMI p : eSent){
+				p.ordinaryProcess();
+			}
+		}
 	}
 		
 	public void receiveRequest(Messages msg) throws RemoteException{
 		candidateMsg.add(msg);
+		if(!awaken) awaken = true;
 	}
-
 
 	synchronized public void ordinaryProcess() throws RemoteException{
 		if(candidateMsg.size() > 0){
@@ -142,20 +158,26 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 					}
 				}
 			}
-			maxLevel++;
+			int maxround = maxLevel/2 +1;
+			int pro_round = pro_Level/2+1;
 			for(Messages s: candidateMsg){
 				int R = s.level/2 + 1;
-				System.out.println("Round: "+R+". Receive from "+s.pro_id+" and max is "+link_id);
+				System.out.println("Round: "+R+". Receive from "+s.pro_id+" and max is "+link_id+" with "+maxid);
 			}
-			System.out.println("My level: "+pro_Level+" maxLevel is: "+maxLevel);
-			if(maxLevel>pro_Level||(maxLevel==pro_Level &&
-					maxid>id)){
+			System.out.println("My round: "+pro_round+" maxround is: "+maxround);
+			
+			if((!isCandidate) || (maxround>pro_round)||(maxround==pro_round && maxid>id)){
 				pro_Level = maxLevel;
 				id = maxid;
+				if(isCandidate){
+					isCandidate = false;
+					System.out.println("I am not candidate any more!\n--------------------------");
+				} 
+
 				proc[link_id].acknowledge(true);
 			}
 			else{
-				System.out.println("I am bigger.");
+				System.out.println("I know or I am bigger candidate.");
 				proc[link_id].acknowledge(false);
 			}
 			
@@ -165,9 +187,6 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 				}
 			}
 			candidateMsg.clear();
-			if(!isCandidate){
-				pro_Level +=2;
-			}	
 		}
 	}
 	
@@ -182,24 +201,20 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 		}
 		if(ackture+ackfalse == test_num){
 			if(ackture < test_num){ 
-				isCandidate =false;
-				System.out.println("I am not candidate any more!\n--------------------------\n");
+				if(isCandidate){
+					isCandidate = false;
+					System.out.println("I am not candidate any more!\n--------------------------");
+				}
 				ackture = 0;
 				ackfalse = 0;
 			}
 			else{
 				int r = pro_Level/2 + 1;
-				System.out.println(r+" round passed!\n--------------------------\n");
+				System.out.println(r+" round passed!\n--------------------------");
 				ackture = 0;
 				ackfalse = 0;
 			}
 		}
-	}
-
-	@Override
-	public int getid() throws RemoteException {
-		// TODO Auto-generated method stub
-		return id;
 	}
 
 }
