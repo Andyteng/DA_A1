@@ -171,7 +171,7 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 				id = maxid;
 				if(isCandidate){
 					isCandidate = false;
-					System.out.println("I am not candidate any more!\n--------------------------");
+					System.out.println("I am not candidate any more!");
 				} 
 
 				proc[link_id].acknowledge(true);
@@ -203,14 +203,14 @@ public class Component extends UnicastRemoteObject implements Component_RMI{
 			if(ackture < test_num){ 
 				if(isCandidate){
 					isCandidate = false;
-					System.out.println("I am not candidate any more!\n--------------------------");
+					System.out.println("I am not candidate any more!");
 				}
 				ackture = 0;
 				ackfalse = 0;
 			}
 			else{
 				int r = pro_Level/2 + 1;
-				System.out.println(r+" round passed!\n--------------------------");
+				System.out.println(r+" round passed!");
 				ackture = 0;
 				ackfalse = 0;
 			}
